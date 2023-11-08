@@ -1,3 +1,4 @@
+import logging
 import os
 
 from django.db.models import Count
@@ -20,13 +21,16 @@ class FileFieldFormView(FormView):
 
     def post(self, request, *args, **kwargs):
         form = self.form_class(request.POST, request.FILES)
-        if request.POST.get("passwrd") == os.getenv("FORM_PASSWORD"):
+        form_valid = form.is_valid()
+        password = form.cleaned_data["password"]
+        if form_valid and password == os.getenv("FORM_PASSWORD"):
             file = request.FILES["file_field"]
             version = models.UploadVersion(content=file)
             version.save()
             tasks.parse_items.apply_async([version.pk])
             return redirect(self.success_url)
         else:
+            logging.info(f"FileFieldFormView.inforrect password: {password} {os.getenv('FORM_PASSWORD')}")
             return render(request, self.template_name, {'form': form})
 
 
