@@ -20,7 +20,7 @@ class FileFieldFormView(FormView):
 
     def post(self, request, *args, **kwargs):
         form = self.form_class(request.POST, request.FILES)
-        if form.is_valid() and request.POST.get("passwrd") == os.getenv("FORM_PASSWORD"):
+        if request.POST.get("passwrd") == os.getenv("FORM_PASSWORD"):
             file = request.FILES["file_field"]
             version = models.UploadVersion(content=file)
             version.save()
