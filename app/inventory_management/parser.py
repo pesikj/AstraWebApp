@@ -1,4 +1,5 @@
 import logging
+import zipfile
 
 from lxml import etree
 from . import models
@@ -9,7 +10,8 @@ class ParserXML:
 
     def __init__(self, version):
         self.version = version
-        self.file = version.content
+        with zipfile.ZipFile(version.content, "r") as f:
+            self.file = f.read(f.namelist()[0])
 
     def _parse_item(self, parsed_item):
         logging.debug("ParserXML._parse_item.start")
@@ -54,7 +56,7 @@ class ParserXML:
 
     def parse_file(self):
         logging.debug("ParserXML.parse_file.start")
-        xml_string = self.file.read()
+        xml_string = self.file
         tree = etree.fromstring(xml_string)
         items = tree.xpath("//items/item")
         items = list(map(self._parse_item, items))
