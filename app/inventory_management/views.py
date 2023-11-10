@@ -27,7 +27,8 @@ class FileFieldFormView(FormView):
             file = request.FILES["file_field"]
             version = models.UploadVersion(content=file)
             version.save()
-            tasks.parse_items.apply_async([version.pk])
+            # tasks.parse_items.apply_async([version.pk])
+            tasks.parse_items(version.pk)
             return redirect(self.success_url)
         else:
             logging.info(f"FileFieldFormView.inforrect password: {password} {os.getenv('FORM_PASSWORD')}")
@@ -40,7 +41,7 @@ class InventoryItemListView(SingleTableView):
 
     def get_queryset(self, *args, **kwargs):
         version = models.UploadVersion.objects.filter(inventoryitem__isnull=False).order_by('uploaded_on').last()
-        return models.InventoryItem.objects.filter(version=version).values("code", "name").distinct()
+        return models.InventoryItem.objects.filter(version=version)
 
 
 class Task1View(TemplateView):
@@ -51,3 +52,12 @@ class Task1View(TemplateView):
         product_count = models.InventoryItem.objects.values('code').distinct().count()
         context["product_count"] = product_count
         return context
+
+
+class InventoryItemReplaceablePartsListView(SingleTableView):
+    table_class = tables.InventoryReplaceablePartsTable
+    template_name = 'table.html'
+
+    def get_queryset(self, *args, **kwargs):
+        version = models.UploadVersion.objects.filter(inventoryitem__isnull=False).order_by('uploaded_on').last()
+        return models.InventoryItem.objects.filter(version=version, not_matched_replaceable_parts__isnull=False)
