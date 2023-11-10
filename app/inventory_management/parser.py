@@ -56,7 +56,7 @@ class ParserXML:
         logging.debug("ParserXML.parse_file.start")
         xml_string = self.file.read()
         tree = etree.fromstring(xml_string)
-        items = tree.xpath("//items/item[@code='ARA102690']")
+        items = tree.xpath("//items/item")
         items = list(map(self._parse_item, items))
         self._save_items(items)
         logging.debug("ParserXML.parse_file.end")
