@@ -27,8 +27,7 @@ class FileFieldFormView(FormView):
             file = request.FILES["file_field"]
             version = models.UploadVersion(content=file)
             version.save()
-            # tasks.parse_items.apply_async([version.pk])
-            tasks.parse_items(version.pk)
+            tasks.parse_items.apply_async([version.pk])
             return redirect(self.success_url)
         else:
             logging.info(f"FileFieldFormView.inforrect password: {password} {os.getenv('FORM_PASSWORD')}")
